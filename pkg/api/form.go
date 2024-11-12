@@ -24,6 +24,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/pdfcpu/pdfcpu/pkg/log"
@@ -426,7 +427,17 @@ func validateComboBoxValues(f form.Form) error {
 		}
 		if len(cb.Options) > 0 {
 			if !types.MemberOf(cb.Value, cb.Options) {
-				return errors.Errorf("pdfcpu: fill field name: \"%s\" unknown value: \"%s\" - options: %v\n", cb.Name, cb.Value, cb.Options)
+				//Then check if the Value resolves to a index position
+				indexPos, err := strconv.Atoi(cb.Value)
+				if err == nil {
+					if indexPos < len(cb.Options) {
+						cb.Value = cb.Options[indexPos]
+					} else {
+						return errors.Errorf("pdfcpu: fill field name: \"%s\" unknown value: \"%s\" - options: %v\n", cb.Name, cb.Value, cb.Options)
+					}
+				} else {
+					return errors.Errorf("pdfcpu: fill field name: \"%s\" unknown value: \"%s\" - options: %v\n", cb.Name, cb.Value, cb.Options)
+				}
 			}
 		}
 	}
@@ -441,7 +452,17 @@ func validateListBoxValues(f form.Form) error {
 		if len(lb.Options) > 0 {
 			for _, v := range lb.Values {
 				if !types.MemberOf(v, lb.Options) {
-					return errors.Errorf("pdfcpu: fill field name: \"%s\" unknown value: \"%s\" - options: %v\n", lb.Name, v, lb.Options)
+					//Then check if the Value resolves to a index position
+					indexPos, err := strconv.Atoi(v)
+					if err == nil {
+						if indexPos < len(lb.Options) {
+							lb.Values = append(lb.Values, lb.Options[indexPos])
+						} else {
+							return errors.Errorf("pdfcpu: fill field name: \"%s\" unknown value: \"%s\" - options: %v\n", lb.Name, v, lb.Options)
+						}
+					} else {
+						return errors.Errorf("pdfcpu: fill field name: \"%s\" unknown value: \"%s\" - options: %v\n", lb.Name, v, lb.Options)
+					}
 				}
 			}
 		}
@@ -454,9 +475,20 @@ func validateRadioButtonGroupValues(f form.Form) error {
 		if rbg.Value == "" {
 			continue
 		}
+
 		if len(rbg.Options) > 0 {
 			if !types.MemberOf(rbg.Value, rbg.Options) {
-				return errors.Errorf("pdfcpu: fill field name: \"%s\" unknown value: \"%s\" - options: %v\n", rbg.Name, rbg.Value, rbg.Options)
+				//Then check if the Value resolves to a index position
+				indexPos, err := strconv.Atoi(rbg.Value)
+				if err == nil {
+					if indexPos < len(rbg.Options) {
+						rbg.Value = rbg.Options[indexPos]
+					} else {
+						return errors.Errorf("pdfcpu: fill field name: \"%s\" unknown value: \"%s\" - options: %v\n", rbg.Name, rbg.Value, rbg.Options)
+					}
+				} else {
+					return errors.Errorf("pdfcpu: fill field name: \"%s\" unknown value: \"%s\" - options: %v\n", rbg.Name, rbg.Value, rbg.Options)
+				}
 			}
 		}
 	}
